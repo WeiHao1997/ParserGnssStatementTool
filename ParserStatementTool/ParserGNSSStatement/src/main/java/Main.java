@@ -42,8 +42,9 @@ public class Main {
                         }
                     }
 
-
                 } else if(NMEA_HEAD_0x24 == (byte) bufferRead_1){
+
+                    NMEAMsgHandle.spliceGnssNMEAStatement(bufferedInputStream);
 
 
                 } else if(RTCM_HEAD_0xD3 == (byte) bufferRead_1){
