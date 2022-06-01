@@ -1,18 +1,23 @@
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+
 
 public class NMEAMsgHandle {
 
-   private static final byte TOOL_NMEA_HEAD = (byte) 0x24;
-   private static final byte TOOL_NMEA_TAIL_1 = (byte) 0x0D;
-   private static final byte TOOL_NMEA_TAIL_2 = (byte) 0x0A;
-   private static final byte TOOL_SIGNAL_COMMA = (byte) 0x2C;
-   private static final byte TOOL_SIGNAL_ASTERISK = (byte) 0x2A;
+    private static final byte TOOL_NMEA_HEAD = (byte) 0x24;
+    private static final byte TOOL_NMEA_TAIL_1 = (byte) 0x0D;
+    private static final byte TOOL_NMEA_TAIL_2 = (byte) 0x0A;
+    private static final byte TOOL_SIGNAL_COMMA = (byte) 0x2C;
+    private static final byte TOOL_SIGNAL_ASTERISK = (byte) 0x2A;
 
-   private static final String TOOL_NMEA_GNGGA = "GNGGA";
+    private static final String TOOL_NMEA_GNGGA = "GNGGA";
+    private static final int TOOOL_NMEA_GNGGA_PARA_COUNT = 14;
 
+    private static final String TOOL_NMEA_PQTMIMU = "PQTMIMU";
+    private static final int TOOL_NMEA_PQTMIMU_PARA_COUNT = 7;
+
+    private static ArrayList<NMEA_DATA_MSG_CURRENT_INFO> nmea_data_msg_current_infos = new ArrayList<>();
 
     public static void spliceGnssNMEAStatement(BufferedInputStream bufferedInputStream) throws IOException {
         byte buffer;
@@ -31,9 +36,7 @@ public class NMEAMsgHandle {
 
         byte []originalCheckSum = new byte[2];
         if(bufferedInputStream.read(originalCheckSum,0,2) != -1){
-
-            String msgCheckSum = new String(originalCheckSum);
-            nmea_data_msg.checkSum = msgCheckSum;
+            nmea_data_msg.checkSum = new String(originalCheckSum);
         }
 
         byte [] endSignal = new byte[2];
@@ -42,7 +45,7 @@ public class NMEAMsgHandle {
 
                 if(nmea_data_msg.checkSum.equals(Tool_Check_XOR(nmea_data_msg))){
                     parserNMEAStatement(nmea_data_msg);
-                    System.out.println(nmea_data_msg);
+//                    System.out.println(nmea_data_msg);
                 }
             }
         }
@@ -59,18 +62,21 @@ public class NMEAMsgHandle {
                 case TOOL_NMEA_GNGGA:
                     parserNmeaStatementGGA(nmea_data_msg);
                     break;
-
             }
         }
-
     }
 
+    public static void parserNmeaStatementIMU(NMEA_DATA_MSG nmea_data_msg){
+        if(nmea_data_msg.msgContent != null){
+            String [] splitData = nmea_data_msg.msgContent.split(",",TOOL_NMEA_PQTMIMU_PARA_COUNT);
+        }
+    }
 
     public static void parserNmeaStatementGGA(NMEA_DATA_MSG nmea_data_msg){
 
         // "083447.000,3149.316803,N,11706.907667,E,1,10,2.05,41.7,M,-3.6,M,,"
         if(nmea_data_msg.msgContent != null){
-            String [] splitData = nmea_data_msg.msgContent.split(",",14);
+            String [] splitData = nmea_data_msg.msgContent.split(",",TOOOL_NMEA_GNGGA_PARA_COUNT);
             NMEA_DATA_MSG_GGA data_msg_gga = new NMEA_DATA_MSG_GGA();
             data_msg_gga.fixCurrentTime = splitData[0];
             data_msg_gga.latitude = splitData[1];
@@ -88,9 +94,26 @@ public class NMEAMsgHandle {
             data_msg_gga.DifferentialBaseStationIdentificationNumber = splitData[13];
 
             System.out.println(data_msg_gga);
-
         }
 
+    }
+
+    static class NMEA_DATA_MSG_CURRENT_INFO{
+        String currentUTCTime;
+
+        int currentUseSVNumber;
+
+        int GPSViewSVNumber;
+        int GLONASSViewSVNumber;
+        int BDSViewSVNumber;
+        int GALILEOViewSVNumber;
+        int QZSSAViewSVNumber;
+
+        int GPSAvgCn0;
+        int GLONASSAvgCn0;
+        int BDSAvgCn0;
+        int GALILEOAvgCn0;
+        int QZSSAvgCn0;
     }
 
     static class NMEA_DATA_MSG{
@@ -113,6 +136,33 @@ public class NMEAMsgHandle {
                     ", msgContent='" + msgContent + '\'' +
                     ", asterisk=" + asterisk +
                     ", checkSum='" + checkSum + '\'' +
+                    '}';
+        }
+    }
+
+    static class NMEA_DATA_MSG_HYF_PQTMIMU{
+        String Timestam;
+        String ACC_X;
+        String ACC_Y;
+        String ACC_Z;
+        String AngRate_X;
+        String AngRate_Y;
+        String AngRate_Z;
+        String TickCount;
+        String LastTick_Timestam;
+
+        @Override
+        public String toString() {
+            return "NMEA_DATA_MSG_HYF_PQTMIMU{" +
+                    "Timestam='" + Timestam + '\'' +
+                    ", ACC_X='" + ACC_X + '\'' +
+                    ", ACC_Y='" + ACC_Y + '\'' +
+                    ", ACC_Z='" + ACC_Z + '\'' +
+                    ", AngRate_X='" + AngRate_X + '\'' +
+                    ", AngRate_Y='" + AngRate_Y + '\'' +
+                    ", AngRate_Z='" + AngRate_Z + '\'' +
+                    ", TickCount='" + TickCount + '\'' +
+                    ", LastTick_Timestam='" + LastTick_Timestam + '\'' +
                     '}';
         }
     }
