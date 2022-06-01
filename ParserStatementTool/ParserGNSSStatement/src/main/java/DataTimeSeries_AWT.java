@@ -3,10 +3,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ui.ApplicationFrame;
 import org.jfree.data.general.SeriesException;
-import org.jfree.data.time.Millisecond;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.*;
 import org.jfree.data.xy.XYDataset;
 import java.util.Date;
 
@@ -25,34 +22,23 @@ public class DataTimeSeries_AWT extends ApplicationFrame {
     private XYDataset createDataset() {
         final TimeSeries series = new TimeSeries("Random Data");
 
+       // Millisecond current = new Millisecond();
 
-//        series.addOrUpdate(new Hour().next(),10);
-//        series.addOrUpdate(new Hour().next(),101);
-//        series.addOrUpdate(new Hour().next(),120);
-//        series.addOrUpdate(new Hour().next(),130);
-//        series.addOrUpdate(new Hour().next(),140);
-//        series.addOrUpdate(new Hour().next(),150);
-
-
-
-
-        Millisecond current = new Millisecond(10,0,0,8,8,12,2022);
-
-        System.out.println(current);
-        System.out.println(current);
+        PeriodUpdateMillisecond current = new PeriodUpdateMillisecond(0,10,10,10,10,10,2022,500);
+        //PeriodUpdateMillisecond current = new PeriodUpdateMillisecond();
+       // current.setPeriodTimeMs(500);
 
         double value = 100.0;
-        for (int i = 0; i < 3600 * 24; i++) {
+        for (int i = 0; i < 3600 * 1000; i++) {
             try {
                 value = value + Math.random() - 0.5;
                 series.add(current, new Double( value ) );
-                current = (Millisecond) current.next();
+                current = (PeriodUpdateMillisecond) current.next();
             }
             catch ( SeriesException e ) {
                 System.err.println("Error adding to series");
             }
         }
-
         return new TimeSeriesCollection(series);
     }
 
