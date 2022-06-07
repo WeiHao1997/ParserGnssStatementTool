@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class CalculateUtils {
 
@@ -34,5 +36,64 @@ public class CalculateUtils {
             arrayListWheelSpeed.add(tempWheelSpeed);
         }
         return arrayListWheelSpeed;
+    }
+
+
+    static class Point{
+        double Latitude;   // 纬度
+        double Longitude;  // 经度
+    }
+
+    public static void CalculateCEP50(ArrayList<Point> listPoint, Point realPoint){
+
+        ArrayList<Double> arrayListCEP = new ArrayList<>();
+
+        double CEP;
+
+        for (int i = 0; i < listPoint.size(); i++) {
+
+            double LatitudeConvert = Math.round(listPoint.get(i).Latitude / 100) + (listPoint.get(i).Latitude  - Math.round(listPoint.get(i).Latitude / 100) * 100) / 60;
+            double LongitudeConvert = Math.round(listPoint.get(i).Longitude / 100) + (listPoint.get(i).Longitude  - Math.round(listPoint.get(i).Longitude / 100) * 100) / 60 ;
+
+//            System.out.println("LatitudeConvert"+LatitudeConvert);
+//            System.out.println("LongitudeConvert"+ LongitudeConvert);
+
+            CEP =  Math.sqrt(Math.pow(Math.cos(realPoint.Latitude * Math.PI / 180) * (LongitudeConvert * Math.PI / 180 - realPoint.Longitude * Math.PI / 180), 2) +
+                    Math.pow((LatitudeConvert * Math.PI / 180 - realPoint.Latitude * Math.PI / 180) , 2));
+
+            CEP *= 6371004;
+
+//            System.out.printf("%f10",CEP);
+//            System.out.println();
+
+            arrayListCEP.add(CEP);
+        }
+
+        Collections.sort(arrayListCEP);
+
+        System.out.println(arrayListCEP.get(arrayListCEP.size() / 2));
+
+        System.out.println(arrayListCEP.get(arrayListCEP.size() / 100 * 68));
+
+        System.out.println(arrayListCEP.get(arrayListCEP.size() / 100 * 95));
+    }
+
+    public static void main(String[] args) {
+
+        ArrayList<Point> fixPoint = new ArrayList<>();
+
+        Point a = new Point();
+        a.Latitude = 3149.297901;
+        a.Longitude = 11706.919326;
+
+        fixPoint.add(a);
+
+        Point real = new Point();
+        real.Longitude = 117.11635553333333;
+        real.Latitude = 31.82207612222222;
+
+
+        CalculateCEP50(fixPoint, real);
+        System.out.println();
     }
 }

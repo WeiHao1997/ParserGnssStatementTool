@@ -30,14 +30,13 @@ public class DataTimeSeries_AWT <T> extends ApplicationFrame {
        // Millisecond current = new Millisecond();
 
         PeriodUpdateMillisecond current = new PeriodUpdateMillisecond(0,3,50,2,10,10,2022,100);
-      //  PeriodUpdateMillisecond current2 = new PeriodUpdateMillisecond(0,10,10,10,10,10,2022,1000);
-        //PeriodUpdateMillisecond current = new PeriodUpdateMillisecond();
+       // PeriodUpdateMillisecond current2 = new PeriodUpdateMillisecond(0,10,10,10,10,10,2022,1000);
+        // PeriodUpdateMillisecond current = new PeriodUpdateMillisecond();
        // current.setPeriodTimeMs(500);
 
         for (int i = 0; i < arrayList.size(); i++) {
             try {
-
-                double a = (Double) arrayList.get(i);
+                int a = (Integer) arrayList.get(i);
               //  System.out.println(a);
                 series.add(current,a);
                 current = (PeriodUpdateMillisecond) current.next();

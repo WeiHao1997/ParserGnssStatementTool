@@ -23,7 +23,7 @@ public class Main {
     public static void main(String[] args) throws Exception{
 
 
-        File file = new File("C:\\Users\\kahn.wei\\Desktop\\Broadcom\\ISSUE-HYF\\2022-06-01-LC29DC-Close-Func\\LC29D-0601_105004_COM372.log");
+        File file = new File("C:\\Users\\kahn.wei\\Desktop\\JIRA_23楼顶20h OPEN静态\\JIRA_23楼顶20h OPEN静态\\LC29DA-23-QX-GGA-ALL.txt");
        // File file = new File("C:\\Users\\kahn.wei\\Desktop\\test.txt");
 
         BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
@@ -56,17 +56,23 @@ public class Main {
         }
 
 
-        ArrayList<Double> arrayList = CalculateUtils.CalculateIMUGetSpeed(NMEAMsgHandle.arrayListWheelTick,
-                NMEAMsgHandle.arrayListTimeTick,
-                NMEAMsgHandle.arrayListTimeTick.size(),
-                0.04);
+//        ArrayList<Double> arrayList = CalculateUtils.CalculateIMUGetSpeed(NMEAMsgHandle.arrayListWheelTick,
+//                NMEAMsgHandle.arrayListTimeTick,
+//                NMEAMsgHandle.arrayListTimeTick.size(),
+//                0.04);
+//
+//
+//        if(NMEAMsgHandle.arrayListUseSVCount.size() > 0){
+//            final DataTimeSeries_AWT demo = new DataTimeSeries_AWT( "WheelSpeed",  NMEAMsgHandle.arrayListUseSVCount);
+//            demo.pack();
+//            demo.setVisible( true );
+//        }
 
-        if(arrayList.size() > 0){
-            final DataTimeSeries_AWT demo = new DataTimeSeries_AWT( "WheelSpeed",  arrayList);
-            demo.pack();
-            demo.setVisible( true );
-        }
+        CalculateUtils.Point real = new CalculateUtils.Point();
+        real.Longitude = 117.11635553333333;
+        real.Latitude = 31.82207612222222;
 
+        CalculateUtils.CalculateCEP50(NMEAMsgHandle.points,real);
 
 
 //        while (bufferedInputStream.available() > 0){

@@ -1,7 +1,7 @@
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-
+import java.util.Arrays;
 
 
 public class NMEAMsgHandle {
@@ -13,13 +13,14 @@ public class NMEAMsgHandle {
     private static final byte TOOL_SIGNAL_ASTERISK = (byte) 0x2A;
 
     private static final String TOOL_NMEA_GGA = "GGA";
-    private static final int TOOOL_NMEA_GNGGA_PARA_COUNT = 14;
+    private static final int TOOOL_NMEA_GGA_PARA_COUNT = 14;
+
+
+    private static final String TOOL_NMEA_GSV = "GSV";
+    private static final int TOOL_NMEA_GSV_PARA_COUNT = 20;
 
     private static final String TOOL_NMEA_PQTMIMU = "PQTMIMU";
     private static final int TOOL_NMEA_PQTMIMU_PARA_COUNT = 9;
-
-    public static ArrayList<Integer> arrayListWheelTick = new ArrayList<>();
-    public static ArrayList<Integer> arrayListTimeTick = new ArrayList<>();
 
 
     public static void spliceGnssNMEAStatement(BufferedInputStream bufferedInputStream) throws IOException {
@@ -48,7 +49,7 @@ public class NMEAMsgHandle {
 
                 if(nmea_data_msg.checkSum.equals(Tool_Check_XOR(nmea_data_msg))){
                     parserNMEAStatement(nmea_data_msg);
-//                    System.out.println(nmea_data_msg);
+                   // System.out.println(nmea_data_msg);
                 }
             }
         }
@@ -61,22 +62,84 @@ public class NMEAMsgHandle {
         if(nmea_data_msg.talkID != null){
             talkID = nmea_data_msg.talkID;
 
-
-            if(talkID.matches(TOOL_NMEA_GGA)){
+            if(talkID.indexOf(TOOL_NMEA_GGA) > 0){
                 parserNmeaStatementGGA(nmea_data_msg);
             }
 
-            else if(talkID.matches(TOOL_NMEA_PQTMIMU)){
-                parserNmeaStatementIMU(nmea_data_msg);
+            else if(talkID.indexOf(TOOL_NMEA_PQTMIMU) > 0){
+              //  parserNmeaStatementIMU(nmea_data_msg);
+            }
+
+            else if(talkID.indexOf(TOOL_NMEA_GSV) > 0){
+              //  parserNmeaStatementGSV(nmea_data_msg);
+              //  System.out.println(nmea_data_msg);
+            }else {
+               // System.out.println(talkID);
             }
         }
     }
 
 
+    public static void parserNmeaStatementGSV(NMEA_DATA_MSG nmea_data_msg){
+
+        /**
+         *         String totalNumberSentence;
+         *         String currentSentence;
+         *         String totalNumberSV;
+         *
+         *         SV_INFO []sv_info;
+         *
+         *         String signalID;
+         */
+
+        if(nmea_data_msg.msgContent != null){
+            String [] splitData = nmea_data_msg.msgContent.split(",");
+
+                NMEA_DATA_MSG_GSV nmea_data_msg_gsv = new NMEA_DATA_MSG_GSV();
+                nmea_data_msg_gsv.totalNumberSentence = splitData[0];
+                nmea_data_msg_gsv.currentSentence = splitData[1];
+                nmea_data_msg_gsv.totalNumberSV = splitData[2];
+
+                int svCount = 0;
+                int svTemp = Integer.parseInt(splitData[2]) - Integer.parseInt(splitData[1]) * 4;
+
+                if(svTemp >= 0 ){
+                    svCount = 4;
+                }else {
+                    svCount = Integer.parseInt(splitData[2]) - (Integer.parseInt(splitData[1]) - 1) * 4;
+                }
+
+                /**
+                 *         String sVID;
+                 *         String elevationAngle;
+                 *         String azimuth;
+                 *         String SNR;
+                 */
+
+                SV_INFO [] arrays_SV = new SV_INFO[svCount];
+                for (int i = 0; i < svCount; i++) {
+                    SV_INFO sv_info = new SV_INFO();
+                    sv_info.sVID = splitData[3 + i];
+                    sv_info.elevationAngle = splitData[4 + i];
+                    sv_info.azimuth = splitData[5 + i];
+                    sv_info.SNR = splitData[6 + i];
+                    arrays_SV[i] = sv_info;
+                }
+                nmea_data_msg_gsv.sv_info = arrays_SV;
+
+                nmea_data_msg_gsv.signalID = splitData[splitData.length - 1];
+
+                System.out.println(nmea_data_msg_gsv);
+        }
+    }
+
+    public static ArrayList<Integer> arrayListWheelTick = new ArrayList<>();
+    public static ArrayList<Integer> arrayListTimeTick = new ArrayList<>();
 
     public static void parserNmeaStatementIMU(NMEA_DATA_MSG nmea_data_msg){
 
         // 3875764,-0.977783,0.098389,-0.190063,-2.618321,-0.648855,0.381679,247461,3770205
+
         /**
          *         String Timestam;
          *         String ACC_X;
@@ -88,6 +151,7 @@ public class NMEAMsgHandle {
          *         String TickCount;
          *         String LastTick_Timestam;
          */
+
         if(nmea_data_msg.msgContent != null){
             String [] splitData = nmea_data_msg.msgContent.split(",",TOOL_NMEA_PQTMIMU_PARA_COUNT);
             NMEA_DATA_MSG_HYF_PQTMIMU nmea_data_msg_hyf_pqtmimu = new NMEA_DATA_MSG_HYF_PQTMIMU();
@@ -101,39 +165,52 @@ public class NMEAMsgHandle {
             nmea_data_msg_hyf_pqtmimu.TickCount = splitData[7];
             nmea_data_msg_hyf_pqtmimu.LastTick_Timestam = splitData[8];
 
-
             arrayListWheelTick.add(Integer.parseInt(nmea_data_msg_hyf_pqtmimu.TickCount));
             arrayListTimeTick.add(Integer.parseInt(nmea_data_msg_hyf_pqtmimu.LastTick_Timestam));
 
           //  System.out.println(nmea_data_msg_hyf_pqtmimu);
-
         }
     }
+
+    public static  ArrayList<Integer> arrayListUseSVCount = new ArrayList<>();
+
+    public static ArrayList<CalculateUtils.Point> points = new ArrayList<>();
 
     public static NMEA_DATA_MSG_GGA parserNmeaStatementGGA(NMEA_DATA_MSG nmea_data_msg){
         // "083447.000,3149.316803,N,11706.907667,E,1,10,2.05,41.7,M,-3.6,M,,"
         NMEA_DATA_MSG_GGA data_msg_gga = null;
         if(nmea_data_msg.msgContent != null){
-            String [] splitData = nmea_data_msg.msgContent.split(",",TOOOL_NMEA_GNGGA_PARA_COUNT);
-            data_msg_gga = new NMEA_DATA_MSG_GGA();
-            data_msg_gga.fixCurrentTime = splitData[0];
-            data_msg_gga.latitude = splitData[1];
-            data_msg_gga.direction_NS = splitData[2];
-            data_msg_gga.longitude = splitData[3];
-            data_msg_gga.direction_EW = splitData[4];
-            data_msg_gga.IndicationMode = splitData[5];
-            data_msg_gga.useSvNumber = splitData[6];
-            data_msg_gga.HorizontalPrecisionFactor = splitData[7];
-            data_msg_gga.altitude = splitData[8];
-            data_msg_gga.altitudeUnit = splitData[9];
-            data_msg_gga.geoIdGap = splitData[10];
-            data_msg_gga.geoIdGapUnit = splitData[11];
-            data_msg_gga.DifferentialSatelliteNavigationSystemDataAge = splitData[12];
-            data_msg_gga.DifferentialBaseStationIdentificationNumber = splitData[13];
+            String [] splitData = nmea_data_msg.msgContent.split(",",TOOOL_NMEA_GGA_PARA_COUNT);
+            if(splitData.length == TOOOL_NMEA_GGA_PARA_COUNT){
+                data_msg_gga = new NMEA_DATA_MSG_GGA();
+                data_msg_gga.talkID = nmea_data_msg.talkID;
+                data_msg_gga.fixCurrentTime = splitData[0];
+                data_msg_gga.latitude = splitData[1];
+                data_msg_gga.direction_NS = splitData[2];
+                data_msg_gga.longitude = splitData[3];
+                data_msg_gga.direction_EW = splitData[4];
+                data_msg_gga.IndicationMode = splitData[5];
+                data_msg_gga.useSvNumber = splitData[6];
+                data_msg_gga.HorizontalPrecisionFactor = splitData[7];
+                data_msg_gga.altitude = splitData[8];
+                data_msg_gga.altitudeUnit = splitData[9];
+                data_msg_gga.geoIdGap = splitData[10];
+                data_msg_gga.geoIdGapUnit = splitData[11];
+                data_msg_gga.DifferentialSatelliteNavigationSystemDataAge = splitData[12];
+                data_msg_gga.DifferentialBaseStationIdentificationNumber = splitData[13];
+                data_msg_gga.checkSum = nmea_data_msg.checkSum;
 
-          //  System.out.println(data_msg_gga);
+                CalculateUtils.Point point = new CalculateUtils.Point();
 
-          //  arrayList.add(Integer.parseInt(data_msg_gga.useSvNumber));
+                if(!splitData[1].equals("") && !splitData[3].equals("")){
+                    point.Latitude = Double.parseDouble(splitData[1]);
+                    point.Longitude = Double.parseDouble(splitData[3]);
+
+                    points.add(point);
+                }
+               // arrayListUseSVCount.add(Integer.parseInt(data_msg_gga.useSvNumber));
+            }
+              System.out.println(data_msg_gga);
         }
         return data_msg_gga;
     }
@@ -154,6 +231,24 @@ public class NMEAMsgHandle {
         int BDSAvgCn0;
         int GALILEOAvgCn0;
         int QZSSAvgCn0;
+
+        @Override
+        public String toString() {
+            return "NMEA_DATA_MSG_CURRENT_INFO{" +
+                    "currentUTCTime='" + currentUTCTime + '\'' +
+                    ", currentUseSVNumber=" + currentUseSVNumber +
+                    ", GPSViewSVNumber=" + GPSViewSVNumber +
+                    ", GLONASSViewSVNumber=" + GLONASSViewSVNumber +
+                    ", BDSViewSVNumber=" + BDSViewSVNumber +
+                    ", GALILEOViewSVNumber=" + GALILEOViewSVNumber +
+                    ", QZSSAViewSVNumber=" + QZSSAViewSVNumber +
+                    ", GPSAvgCn0=" + GPSAvgCn0 +
+                    ", GLONASSAvgCn0=" + GLONASSAvgCn0 +
+                    ", BDSAvgCn0=" + BDSAvgCn0 +
+                    ", GALILEOAvgCn0=" + GALILEOAvgCn0 +
+                    ", QZSSAvgCn0=" + QZSSAvgCn0 +
+                    '}';
+        }
     }
 
     static class NMEA_DATA_MSG{
@@ -208,15 +303,41 @@ public class NMEAMsgHandle {
     }
 
 
+    static class SV_INFO{
+        String sVID;
+        String elevationAngle;
+        String azimuth;
+        String SNR;
+
+        @Override
+        public String toString() {
+            return "SV_INFO{" +
+                    "sVID='" + sVID + '\'' +
+                    ", elevationAngle='" + elevationAngle + '\'' +
+                    ", azimuth='" + azimuth + '\'' +
+                    ", SNR='" + SNR + '\'' +
+                    '}';
+        }
+    }
     static class NMEA_DATA_MSG_GSV{
         String totalNumberSentence;
         String currentSentence;
         String totalNumberSV;
-        String sVID;
-        String elevationAngle;
 
-        String azimuth;
+        SV_INFO []sv_info;
 
+        String signalID;
+
+        @Override
+        public String toString() {
+            return "NMEA_DATA_MSG_GSV{" +
+                    "totalNumberSentence='" + totalNumberSentence + '\'' +
+                    ", currentSentence='" + currentSentence + '\'' +
+                    ", totalNumberSV='" + totalNumberSV + '\'' +
+                    ", sv_info=" + Arrays.toString(sv_info) +
+                    ", signalID='" + signalID + '\'' +
+                    '}';
+        }
     }
 
     static class NMEA_DATA_MSG_GGA{
