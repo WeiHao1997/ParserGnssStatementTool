@@ -23,7 +23,7 @@ public class Main {
     public static void main(String[] args) throws Exception{
 
 
-        File file = new File("C:\\Users\\MI\\Desktop\\SAVE2022_5_20_14-28-53.DAT");
+        File file = new File("C:\\Users\\kahn.wei\\Desktop\\Broadcom\\ISSUE-HYF\\2022-06-01-LC29DC-Close-Func\\LC29D-0601_105004_COM372.log");
        // File file = new File("C:\\Users\\kahn.wei\\Desktop\\test.txt");
 
         BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
@@ -46,7 +46,6 @@ public class Main {
 
                     NMEAMsgHandle.spliceGnssNMEAStatement(bufferedInputStream);
 
-
                 } else if(RTCM_HEAD_0xD3 == (byte) bufferRead_1){
 
 
@@ -55,6 +54,20 @@ public class Main {
                 }
             }
         }
+
+
+        ArrayList<Double> arrayList = CalculateUtils.CalculateIMUGetSpeed(NMEAMsgHandle.arrayListWheelTick,
+                NMEAMsgHandle.arrayListTimeTick,
+                NMEAMsgHandle.arrayListTimeTick.size(),
+                0.04);
+
+        if(arrayList.size() > 0){
+            final DataTimeSeries_AWT demo = new DataTimeSeries_AWT( "WheelSpeed",  arrayList);
+            demo.pack();
+            demo.setVisible( true );
+        }
+
+
 
 //        while (bufferedInputStream.available() > 0){
 //

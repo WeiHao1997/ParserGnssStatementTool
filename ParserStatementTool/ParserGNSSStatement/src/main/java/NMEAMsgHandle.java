@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 
+
 public class NMEAMsgHandle {
 
     private static final byte TOOL_NMEA_HEAD = (byte) 0x24;
@@ -11,13 +12,15 @@ public class NMEAMsgHandle {
     private static final byte TOOL_SIGNAL_COMMA = (byte) 0x2C;
     private static final byte TOOL_SIGNAL_ASTERISK = (byte) 0x2A;
 
-    private static final String TOOL_NMEA_GNGGA = "GNGGA";
+    private static final String TOOL_NMEA_GGA = "GGA";
     private static final int TOOOL_NMEA_GNGGA_PARA_COUNT = 14;
 
     private static final String TOOL_NMEA_PQTMIMU = "PQTMIMU";
-    private static final int TOOL_NMEA_PQTMIMU_PARA_COUNT = 7;
+    private static final int TOOL_NMEA_PQTMIMU_PARA_COUNT = 9;
 
-    private static ArrayList<NMEA_DATA_MSG_CURRENT_INFO> nmea_data_msg_current_infos = new ArrayList<>();
+    public static ArrayList<Integer> arrayListWheelTick = new ArrayList<>();
+    public static ArrayList<Integer> arrayListTimeTick = new ArrayList<>();
+
 
     public static void spliceGnssNMEAStatement(BufferedInputStream bufferedInputStream) throws IOException {
         byte buffer;
@@ -58,26 +61,61 @@ public class NMEAMsgHandle {
         if(nmea_data_msg.talkID != null){
             talkID = nmea_data_msg.talkID;
 
-            switch (talkID){
-                case TOOL_NMEA_GNGGA:
-                    parserNmeaStatementGGA(nmea_data_msg);
-                    break;
+
+            if(talkID.matches(TOOL_NMEA_GGA)){
+                parserNmeaStatementGGA(nmea_data_msg);
+            }
+
+            else if(talkID.matches(TOOL_NMEA_PQTMIMU)){
+                parserNmeaStatementIMU(nmea_data_msg);
             }
         }
     }
 
+
+
     public static void parserNmeaStatementIMU(NMEA_DATA_MSG nmea_data_msg){
+
+        // 3875764,-0.977783,0.098389,-0.190063,-2.618321,-0.648855,0.381679,247461,3770205
+        /**
+         *         String Timestam;
+         *         String ACC_X;
+         *         String ACC_Y;
+         *         String ACC_Z;
+         *         String AngRate_X;
+         *         String AngRate_Y;
+         *         String AngRate_Z;
+         *         String TickCount;
+         *         String LastTick_Timestam;
+         */
         if(nmea_data_msg.msgContent != null){
             String [] splitData = nmea_data_msg.msgContent.split(",",TOOL_NMEA_PQTMIMU_PARA_COUNT);
+            NMEA_DATA_MSG_HYF_PQTMIMU nmea_data_msg_hyf_pqtmimu = new NMEA_DATA_MSG_HYF_PQTMIMU();
+            nmea_data_msg_hyf_pqtmimu.Timestam = splitData[0];
+            nmea_data_msg_hyf_pqtmimu.ACC_X = splitData[1];
+            nmea_data_msg_hyf_pqtmimu.ACC_Y = splitData[2];
+            nmea_data_msg_hyf_pqtmimu.ACC_Z = splitData[3];
+            nmea_data_msg_hyf_pqtmimu.AngRate_X = splitData[4];
+            nmea_data_msg_hyf_pqtmimu.AngRate_Y = splitData[5];
+            nmea_data_msg_hyf_pqtmimu.AngRate_Z = splitData[6];
+            nmea_data_msg_hyf_pqtmimu.TickCount = splitData[7];
+            nmea_data_msg_hyf_pqtmimu.LastTick_Timestam = splitData[8];
+
+
+            arrayListWheelTick.add(Integer.parseInt(nmea_data_msg_hyf_pqtmimu.TickCount));
+            arrayListTimeTick.add(Integer.parseInt(nmea_data_msg_hyf_pqtmimu.LastTick_Timestam));
+
+          //  System.out.println(nmea_data_msg_hyf_pqtmimu);
+
         }
     }
 
-    public static void parserNmeaStatementGGA(NMEA_DATA_MSG nmea_data_msg){
-
+    public static NMEA_DATA_MSG_GGA parserNmeaStatementGGA(NMEA_DATA_MSG nmea_data_msg){
         // "083447.000,3149.316803,N,11706.907667,E,1,10,2.05,41.7,M,-3.6,M,,"
+        NMEA_DATA_MSG_GGA data_msg_gga = null;
         if(nmea_data_msg.msgContent != null){
             String [] splitData = nmea_data_msg.msgContent.split(",",TOOOL_NMEA_GNGGA_PARA_COUNT);
-            NMEA_DATA_MSG_GGA data_msg_gga = new NMEA_DATA_MSG_GGA();
+            data_msg_gga = new NMEA_DATA_MSG_GGA();
             data_msg_gga.fixCurrentTime = splitData[0];
             data_msg_gga.latitude = splitData[1];
             data_msg_gga.direction_NS = splitData[2];
@@ -93,9 +131,11 @@ public class NMEAMsgHandle {
             data_msg_gga.DifferentialSatelliteNavigationSystemDataAge = splitData[12];
             data_msg_gga.DifferentialBaseStationIdentificationNumber = splitData[13];
 
-            System.out.println(data_msg_gga);
-        }
+          //  System.out.println(data_msg_gga);
 
+          //  arrayList.add(Integer.parseInt(data_msg_gga.useSvNumber));
+        }
+        return data_msg_gga;
     }
 
     static class NMEA_DATA_MSG_CURRENT_INFO{
@@ -167,6 +207,17 @@ public class NMEAMsgHandle {
         }
     }
 
+
+    static class NMEA_DATA_MSG_GSV{
+        String totalNumberSentence;
+        String currentSentence;
+        String totalNumberSV;
+        String sVID;
+        String elevationAngle;
+
+        String azimuth;
+
+    }
 
     static class NMEA_DATA_MSG_GGA{
         String talkID;
