@@ -23,7 +23,7 @@ public class Main {
     public static void main(String[] args) throws Exception{
 
 
-        File file = new File("C:\\Users\\kahn.wei\\Desktop\\JIRA_23楼顶20h OPEN静态\\JIRA_23楼顶20h OPEN静态\\LC29DA-23-QX-GGA-ALL.txt");
+        File file = new File("G:\\Tools\\sscom5.13.1\\SAVE2022_5_20_14-28-53.DAT");
        // File file = new File("C:\\Users\\kahn.wei\\Desktop\\test.txt");
 
         BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
@@ -38,7 +38,7 @@ public class Main {
                 if(BCM_HEAD_0xB5 == (byte) bufferRead_1){
                     if((bufferRead_2= bufferedInputStream.read()) != -1){
                         if((BCM_HEAD_0xB5 == (byte) bufferRead_1) && (BCM_HEAD_0x62 == (byte) bufferRead_2)){
-                            BreamMsgHandle.spliceGnssBreamStatement(bufferedInputStream);
+                           // BreamMsgHandle.spliceGnssBreamStatement(bufferedInputStream);
                         }
                     }
 
@@ -68,11 +68,21 @@ public class Main {
 //            demo.setVisible( true );
 //        }
 
-        CalculateUtils.Point real = new CalculateUtils.Point();
-        real.Longitude = 117.11635553333333;
-        real.Latitude = 31.82207612222222;
 
-        CalculateUtils.CalculateCEP50(NMEAMsgHandle.points,real);
+        if(CalculateUtils.arrayListCEP.size() > 0){
+            CalculateUtils.Point real = new CalculateUtils.Point();
+            real.Longitude = 117.11635553333333;
+            real.Latitude = 31.82207612222222;
+
+            CalculateUtils.CalculateCEP50(NMEAMsgHandle.points,real);
+
+
+            final DataTimeSeries_AWT demo = new DataTimeSeries_AWT( "WheelSpeed",  CalculateUtils.arrayListCEP, NMEAMsgHandle.arrayListUseSVCount);
+            demo.pack();
+            demo.setVisible( true );
+        }
+
+
 
 
 //        while (bufferedInputStream.available() > 0){

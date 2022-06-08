@@ -44,11 +44,12 @@ public class CalculateUtils {
         double Longitude;  // 经度
     }
 
+
+    public static ArrayList<Double> arrayListCEP = new ArrayList<>();
+
     public static void CalculateCEP50(ArrayList<Point> listPoint, Point realPoint){
 
-        ArrayList<Double> arrayListCEP = new ArrayList<>();
-
-        double CEP;
+        double CEP = 0;
 
         for (int i = 0; i < listPoint.size(); i++) {
 
@@ -69,9 +70,9 @@ public class CalculateUtils {
             arrayListCEP.add(CEP);
         }
 
-        Collections.sort(arrayListCEP);
+     //   Collections.sort(arrayListCEP);
 
-        System.out.println(arrayListCEP.get(arrayListCEP.size() / 2));
+        System.out.println(arrayListCEP.get(arrayListCEP.size() / 100 * 50));
 
         System.out.println(arrayListCEP.get(arrayListCEP.size() / 100 * 68));
 
@@ -91,7 +92,6 @@ public class CalculateUtils {
         Point real = new Point();
         real.Longitude = 117.11635553333333;
         real.Latitude = 31.82207612222222;
-
 
         CalculateCEP50(fixPoint, real);
         System.out.println();

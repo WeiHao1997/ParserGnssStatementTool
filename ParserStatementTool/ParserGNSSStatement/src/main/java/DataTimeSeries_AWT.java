@@ -12,9 +12,9 @@ import java.util.Date;
 
 
 public class DataTimeSeries_AWT <T> extends ApplicationFrame {
-    public DataTimeSeries_AWT(String title, ArrayList<T> arrayList) {
+    public DataTimeSeries_AWT(String title, ArrayList<T> arrayList, ArrayList<T> arrayListSV) {
         super(title);
-        final XYDataset dataset = createDataset(arrayList);
+        final XYDataset dataset = createDataset(arrayList,arrayListSV);
         final JFreeChart chart = createChart(dataset);
         final ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new java.awt.Dimension(1536 , 512));
@@ -22,24 +22,38 @@ public class DataTimeSeries_AWT <T> extends ApplicationFrame {
         setContentPane(chartPanel);
     }
 
-    private XYDataset createDataset(ArrayList<T> arrayList) {
+    private XYDataset createDataset(ArrayList<T> arrayList,ArrayList<T> arrayListSV) {
 
         final TimeSeries series = new TimeSeries("Random Data");
+        final TimeSeries series1 = new TimeSeries("Random Data");
 //        final TimeSeries series1 = new TimeSeries("Random Data");
 
        // Millisecond current = new Millisecond();
 
-        PeriodUpdateMillisecond current = new PeriodUpdateMillisecond(0,3,50,2,10,10,2022,100);
+        PeriodUpdateMillisecond current = new PeriodUpdateMillisecond(0,3,50,2,10,10,2022,1000);
+        PeriodUpdateMillisecond current1 = new PeriodUpdateMillisecond(0,10,47,5,10,10,2022,1000);
        // PeriodUpdateMillisecond current2 = new PeriodUpdateMillisecond(0,10,10,10,10,10,2022,1000);
         // PeriodUpdateMillisecond current = new PeriodUpdateMillisecond();
        // current.setPeriodTimeMs(500);
 
         for (int i = 0; i < arrayList.size(); i++) {
             try {
-                int a = (Integer) arrayList.get(i);
+                double a = (Double) arrayList.get(i);
               //  System.out.println(a);
                 series.add(current,a);
                 current = (PeriodUpdateMillisecond) current.next();
+            }
+            catch (SeriesException e) {
+                System.err.println("Error adding to series");
+            }
+        }
+
+        for (int i = 0; i < arrayListSV.size(); i++) {
+            try {
+                int a = (Integer) arrayListSV.get(i);
+                //  System.out.println(a);
+                series1.add(current1,a);
+                current1 = (PeriodUpdateMillisecond) current1.next();
             }
             catch (SeriesException e) {
                 System.err.println("Error adding to series");
@@ -58,16 +72,16 @@ public class DataTimeSeries_AWT <T> extends ApplicationFrame {
 
         TimeSeriesCollection timeSeriesCollection = new TimeSeriesCollection();
         timeSeriesCollection.addSeries(series);
-//        timeSeriesCollection.addSeries(series1);
+ //       timeSeriesCollection.addSeries(series1);
 
         return timeSeriesCollection;
     }
 
     private JFreeChart createChart(final XYDataset dataset ) {
         return ChartFactory.createTimeSeriesChart(
-                "WheelSpeed",
+                "QX Fixed Solution Trend Chart",
                 "UTC-TIME",
-                "Value-VEH",
+                "Accuracy",
                 dataset,
                 false,
                 false,

@@ -63,7 +63,7 @@ public class NMEAMsgHandle {
             talkID = nmea_data_msg.talkID;
 
             if(talkID.indexOf(TOOL_NMEA_GGA) > 0){
-                parserNmeaStatementGGA(nmea_data_msg);
+               // parserNmeaStatementGGA(nmea_data_msg);
             }
 
             else if(talkID.indexOf(TOOL_NMEA_PQTMIMU) > 0){
@@ -71,8 +71,8 @@ public class NMEAMsgHandle {
             }
 
             else if(talkID.indexOf(TOOL_NMEA_GSV) > 0){
-              //  parserNmeaStatementGSV(nmea_data_msg);
-              //  System.out.println(nmea_data_msg);
+                 parserNmeaStatementGSV(nmea_data_msg);
+               // System.out.println(nmea_data_msg);
             }else {
                // System.out.println(talkID);
             }
@@ -95,20 +95,14 @@ public class NMEAMsgHandle {
         if(nmea_data_msg.msgContent != null){
             String [] splitData = nmea_data_msg.msgContent.split(",");
 
+            int svCount = (splitData.length - 4) / 4;
+
+            if((svCount == 1) || (svCount  == 2) || (svCount == 3) || (svCount == 4)){
+
                 NMEA_DATA_MSG_GSV nmea_data_msg_gsv = new NMEA_DATA_MSG_GSV();
                 nmea_data_msg_gsv.totalNumberSentence = splitData[0];
                 nmea_data_msg_gsv.currentSentence = splitData[1];
                 nmea_data_msg_gsv.totalNumberSV = splitData[2];
-
-                int svCount = 0;
-                int svTemp = Integer.parseInt(splitData[2]) - Integer.parseInt(splitData[1]) * 4;
-
-                if(svTemp >= 0 ){
-                    svCount = 4;
-                }else {
-                    svCount = Integer.parseInt(splitData[2]) - (Integer.parseInt(splitData[1]) - 1) * 4;
-                }
-
                 /**
                  *         String sVID;
                  *         String elevationAngle;
@@ -130,6 +124,8 @@ public class NMEAMsgHandle {
                 nmea_data_msg_gsv.signalID = splitData[splitData.length - 1];
 
                 System.out.println(nmea_data_msg_gsv);
+            }
+
         }
     }
 
@@ -208,7 +204,7 @@ public class NMEAMsgHandle {
 
                     points.add(point);
                 }
-               // arrayListUseSVCount.add(Integer.parseInt(data_msg_gga.useSvNumber));
+                arrayListUseSVCount.add(Integer.parseInt(data_msg_gga.useSvNumber));
             }
               System.out.println(data_msg_gga);
         }
