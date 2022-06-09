@@ -1,3 +1,4 @@
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +24,7 @@ public class Main {
     public static void main(String[] args) throws Exception{
 
 
-        File file = new File("G:\\Tools\\sscom5.13.1\\SAVE2022_5_20_14-28-53.DAT");
+        File file = new File("C:\\Users\\kahn.wei\\Desktop\\Broadcom\\ISSUE-SCY\\OverSea\\20220608-C29DA-BETA0530-OVERSEA\\LC29D-0607_165046_COM11 Without corrections.log");
        // File file = new File("C:\\Users\\kahn.wei\\Desktop\\test.txt");
 
         BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(file));
@@ -38,7 +39,7 @@ public class Main {
                 if(BCM_HEAD_0xB5 == (byte) bufferRead_1){
                     if((bufferRead_2= bufferedInputStream.read()) != -1){
                         if((BCM_HEAD_0xB5 == (byte) bufferRead_1) && (BCM_HEAD_0x62 == (byte) bufferRead_2)){
-                           // BreamMsgHandle.spliceGnssBreamStatement(bufferedInputStream);
+                            BreamMsgHandle.spliceGnssBreamStatement(bufferedInputStream);
                         }
                     }
 
@@ -56,30 +57,39 @@ public class Main {
         }
 
 
+//            final DataTimeSeries_AWT demo = new DataTimeSeries_AWT( "WheelSpeed", NMEAMsgHandle.arrayListWheelTickCount , NMEAMsgHandle.arrayListWheelTickCount);
+//            demo.pack();
+//            demo.setVisible( true );
+
 //        ArrayList<Double> arrayList = CalculateUtils.CalculateIMUGetSpeed(NMEAMsgHandle.arrayListWheelTick,
 //                NMEAMsgHandle.arrayListTimeTick,
 //                NMEAMsgHandle.arrayListTimeTick.size(),
 //                0.04);
 //
-//
-//        if(NMEAMsgHandle.arrayListUseSVCount.size() > 0){
-//            final DataTimeSeries_AWT demo = new DataTimeSeries_AWT( "WheelSpeed",  NMEAMsgHandle.arrayListUseSVCount);
+//        if(arrayList.size() > 0){
+//            final DataTimeSeries_AWT demo = new DataTimeSeries_AWT( "WheelSpeed",  arrayList,arrayList,"double");
 //            demo.pack();
 //            demo.setVisible( true );
 //        }
 
 
-        if(CalculateUtils.arrayListCEP.size() > 0){
+//        System.out.println(NMEAMsgHandle.GPS_GSV_LIST.size());
+//
+        if(NMEAMsgHandle.points.size() > 0){
             CalculateUtils.Point real = new CalculateUtils.Point();
-            real.Longitude = 117.11635553333333;
-            real.Latitude = 31.82207612222222;
+//        real.Longitude = 117.11635553333333;
+//        real.Latitude = 31.82207612222222;
+            real.Latitude = 44.82381250;
+            real.Longitude = 20.41597023;
 
             CalculateUtils.CalculateCEP50(NMEAMsgHandle.points,real);
 
+            if(CalculateUtils.arrayListCEP.size() > 0){
 
-            final DataTimeSeries_AWT demo = new DataTimeSeries_AWT( "WheelSpeed",  CalculateUtils.arrayListCEP, NMEAMsgHandle.arrayListUseSVCount);
-            demo.pack();
-            demo.setVisible( true );
+                final DataTimeSeries_AWT demo = new DataTimeSeries_AWT( "WheelSpeed",  CalculateUtils.arrayListCEP, NMEAMsgHandle.arrayListUseSVCount,"double");
+                demo.pack();
+                demo.setVisible( true );
+            }
         }
 
 

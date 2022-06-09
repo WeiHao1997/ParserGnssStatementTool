@@ -1,3 +1,6 @@
+import com.sun.deploy.net.MessageHeader;
+
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +24,26 @@ public class NMEAMsgHandle {
 
     private static final String TOOL_NMEA_PQTMIMU = "PQTMIMU";
     private static final int TOOL_NMEA_PQTMIMU_PARA_COUNT = 9;
+
+    private static final String TOOL_NMEA_PQTMVEHMSG = "PQTMVEHMSG";
+    private static final int TOOL_NMEA_PQTMVEHMSG_PARA_COUNT = 4;
+
+    private static int recordAllGGAStatement = 0;
+
+    static class FRAME_MSG_GSV{
+        ArrayList<NMEA_DATA_MSG_GSV> GP_GSV_LIST;
+        ArrayList<NMEA_DATA_MSG_GSV> BD_GSV_LIST;
+        ArrayList<NMEA_DATA_MSG_GSV> GA_GSV_LIST;
+        ArrayList<NMEA_DATA_MSG_GSV> GL_GSV_LIST;
+        ArrayList<NMEA_DATA_MSG_GSV> GQ_GSV_LIST;
+    }
+    public static ArrayList<FRAME_MSG_GSV> FRAME_GSV = new ArrayList<>();
+
+    public static ArrayList<NMEA_DATA_MSG_GSV> GP_GSV_LIST = new ArrayList<>();
+    public static ArrayList<NMEA_DATA_MSG_GSV> GB_GSV_LIST = new ArrayList<>();
+    public static ArrayList<NMEA_DATA_MSG_GSV> GA_GSV_LIST = new ArrayList<>();
+    public static ArrayList<NMEA_DATA_MSG_GSV> GL_GSV_LIST = new ArrayList<>();
+    public static ArrayList<NMEA_DATA_MSG_GSV> GQ_GSV_LIST = new ArrayList<>();
 
 
     public static void spliceGnssNMEAStatement(BufferedInputStream bufferedInputStream) throws IOException {
@@ -55,24 +78,53 @@ public class NMEAMsgHandle {
         }
     }
 
+    ArrayList<NMEA_DATA_MSG_CURRENT_INFO> nmea_data_msg_current_infoArrayList = new ArrayList<>();
+
+
+
     public static void parserNMEAStatement(NMEA_DATA_MSG nmea_data_msg){
 
         String talkID;
+        int localCount = recordAllGGAStatement;
 
         if(nmea_data_msg.talkID != null){
             talkID = nmea_data_msg.talkID;
 
             if(talkID.indexOf(TOOL_NMEA_GGA) > 0){
-               // parserNmeaStatementGGA(nmea_data_msg);
+              //  recordAllGGAStatement++;
+                parserNmeaStatementGGA(nmea_data_msg);
             }
 
-            else if(talkID.indexOf(TOOL_NMEA_PQTMIMU) > 0){
-              //  parserNmeaStatementIMU(nmea_data_msg);
+            else if(talkID.equals(TOOL_NMEA_PQTMIMU)){
+             //   parserNmeaStatementIMU(nmea_data_msg);
+            }
+
+            else if (talkID.equals(TOOL_NMEA_PQTMVEHMSG)){
+               // parserNmeaStatementVEGMSG(nmea_data_msg);
             }
 
             else if(talkID.indexOf(TOOL_NMEA_GSV) > 0){
-                 parserNmeaStatementGSV(nmea_data_msg);
-               // System.out.println(nmea_data_msg);
+
+//                NMEA_DATA_MSG_GSV temp_gsv;
+//               // System.out.println(nmea_data_msg);
+//
+//                temp_gsv =  parserNmeaStatementGSV(nmea_data_msg);
+//
+//                if(temp_gsv != null){
+//                    if("GPGSV".equals(temp_gsv.talkID)){
+//                        GP_GSV_LIST.add(temp_gsv);
+//                    }else if("GLGSV".equals(temp_gsv.talkID)){
+//                        GL_GSV_LIST.add(temp_gsv);
+//                    }else if("GAGSV".equals(temp_gsv.talkID)){
+//                        GA_GSV_LIST.add(temp_gsv);
+//                    }else if ("GBGSV".equals(temp_gsv.talkID)){
+//                        GB_GSV_LIST.add(temp_gsv);
+//                    }else if("GQGSV".equals(temp_gsv.talkID)){
+//                        GQ_GSV_LIST.add(temp_gsv);
+//                    }
+//                }
+
+
             }else {
                // System.out.println(talkID);
             }
@@ -80,7 +132,8 @@ public class NMEAMsgHandle {
     }
 
 
-    public static void parserNmeaStatementGSV(NMEA_DATA_MSG nmea_data_msg){
+
+    public static NMEA_DATA_MSG_GSV parserNmeaStatementGSV(NMEA_DATA_MSG nmea_data_msg){
 
         /**
          *         String totalNumberSentence;
@@ -92,6 +145,7 @@ public class NMEAMsgHandle {
          *         String signalID;
          */
 
+        NMEA_DATA_MSG_GSV nmea_data_msg_gsv = null;
         if(nmea_data_msg.msgContent != null){
             String [] splitData = nmea_data_msg.msgContent.split(",");
 
@@ -99,7 +153,8 @@ public class NMEAMsgHandle {
 
             if((svCount == 1) || (svCount  == 2) || (svCount == 3) || (svCount == 4)){
 
-                NMEA_DATA_MSG_GSV nmea_data_msg_gsv = new NMEA_DATA_MSG_GSV();
+                nmea_data_msg_gsv = new NMEA_DATA_MSG_GSV();
+                nmea_data_msg_gsv.talkID = nmea_data_msg.talkID;
                 nmea_data_msg_gsv.totalNumberSentence = splitData[0];
                 nmea_data_msg_gsv.currentSentence = splitData[1];
                 nmea_data_msg_gsv.totalNumberSV = splitData[2];
@@ -119,13 +174,37 @@ public class NMEAMsgHandle {
                     sv_info.SNR = splitData[6 + i];
                     arrays_SV[i] = sv_info;
                 }
+
                 nmea_data_msg_gsv.sv_info = arrays_SV;
-
                 nmea_data_msg_gsv.signalID = splitData[splitData.length - 1];
+                nmea_data_msg_gsv.checkSum = nmea_data_msg.checkSum;
 
-                System.out.println(nmea_data_msg_gsv);
+
             }
+        }
+      //  System.out.println(nmea_data_msg_gsv);
+        return nmea_data_msg_gsv;
+    }
 
+    public static ArrayList<Integer> arrayListWheelTickCount = new ArrayList<>();
+    public static void parserNmeaStatementVEGMSG(NMEA_DATA_MSG nmea_data_msg){
+
+        /**
+         *         String MsgType;
+         *         String Timestam;
+         *         String WheelTickCount;
+         *         String Reserved;
+         */
+        if(nmea_data_msg.msgContent != null){
+            String [] splitData = nmea_data_msg.msgContent.split(",",TOOL_NMEA_PQTMVEHMSG_PARA_COUNT);
+            NMEA_DATA_MSG_HYF_VEHMSG msg_hyf_vehmsg = new NMEA_DATA_MSG_HYF_VEHMSG();
+            msg_hyf_vehmsg.MsgType = splitData[0];
+            msg_hyf_vehmsg.Timestam = splitData[1];
+            msg_hyf_vehmsg.WheelTickCount = splitData[2];
+            msg_hyf_vehmsg.Reserved = splitData[3];
+
+            arrayListWheelTickCount.add(Integer.parseInt(splitData[2]));
+            System.out.println(msg_hyf_vehmsg);
         }
     }
 
@@ -164,7 +243,7 @@ public class NMEAMsgHandle {
             arrayListWheelTick.add(Integer.parseInt(nmea_data_msg_hyf_pqtmimu.TickCount));
             arrayListTimeTick.add(Integer.parseInt(nmea_data_msg_hyf_pqtmimu.LastTick_Timestam));
 
-          //  System.out.println(nmea_data_msg_hyf_pqtmimu);
+            System.out.println(nmea_data_msg_hyf_pqtmimu);
         }
     }
 
@@ -210,6 +289,9 @@ public class NMEAMsgHandle {
         }
         return data_msg_gga;
     }
+
+
+
 
     static class NMEA_DATA_MSG_CURRENT_INFO{
         String currentUTCTime;
@@ -316,6 +398,7 @@ public class NMEAMsgHandle {
         }
     }
     static class NMEA_DATA_MSG_GSV{
+        String talkID;
         String totalNumberSentence;
         String currentSentence;
         String totalNumberSV;
@@ -323,15 +406,18 @@ public class NMEAMsgHandle {
         SV_INFO []sv_info;
 
         String signalID;
+        String checkSum;
 
         @Override
         public String toString() {
             return "NMEA_DATA_MSG_GSV{" +
-                    "totalNumberSentence='" + totalNumberSentence + '\'' +
+                    "talkID='" + talkID + '\'' +
+                    ", totalNumberSentence='" + totalNumberSentence + '\'' +
                     ", currentSentence='" + currentSentence + '\'' +
                     ", totalNumberSV='" + totalNumberSV + '\'' +
                     ", sv_info=" + Arrays.toString(sv_info) +
                     ", signalID='" + signalID + '\'' +
+                    ", checkSum='" + checkSum + '\'' +
                     '}';
         }
     }
@@ -373,6 +459,23 @@ public class NMEAMsgHandle {
                     ", DifferentialSatelliteNavigationSystemDataAge='" + DifferentialSatelliteNavigationSystemDataAge + '\'' +
                     ", DifferentialBaseStationIdentificationNumber='" + DifferentialBaseStationIdentificationNumber + '\'' +
                     ", checkSum='" + checkSum + '\'' +
+                    '}';
+        }
+    }
+
+    static class NMEA_DATA_MSG_HYF_VEHMSG{
+        String MsgType;
+        String Timestam;
+        String WheelTickCount;
+        String Reserved;
+
+        @Override
+        public String toString() {
+            return "NMEA_DATA_MSG_VEHMSG{" +
+                    "MsgType='" + MsgType + '\'' +
+                    ", Timestam='" + Timestam + '\'' +
+                    ", WheelTickCount='" + WheelTickCount + '\'' +
+                    ", Reserved='" + Reserved + '\'' +
                     '}';
         }
     }

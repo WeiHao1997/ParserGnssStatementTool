@@ -70,7 +70,7 @@ public class CalculateUtils {
             arrayListCEP.add(CEP);
         }
 
-     //   Collections.sort(arrayListCEP);
+        Collections.sort(arrayListCEP);   // 排序
 
         System.out.println(arrayListCEP.get(arrayListCEP.size() / 100 * 50));
 
